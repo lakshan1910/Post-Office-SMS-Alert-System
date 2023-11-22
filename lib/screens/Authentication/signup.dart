@@ -59,6 +59,7 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool checkedValue = false;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Register"),

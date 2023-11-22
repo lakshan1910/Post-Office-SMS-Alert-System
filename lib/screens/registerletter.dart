@@ -68,6 +68,20 @@ class _RegisterLetterState extends State<RegisterLetter> {
 
     await docRef.set(_letter);
 
+    model.LetterModel _letterUpdate =
+        model.LetterModel(trackingID: docRef.id.toString());
+
+    final docRef2 = db
+        .collection("Letters")
+        .withConverter(
+          fromFirestore: model.LetterModel.fromFirestore,
+          toFirestore: (model.LetterModel letter, options) =>
+              letter.toFirestore(),
+        )
+        .doc(docRef.id.toString());
+
+    await docRef2.set(_letterUpdate);
+
     _name.clear();
     _address.clear();
     _telephone.clear();
