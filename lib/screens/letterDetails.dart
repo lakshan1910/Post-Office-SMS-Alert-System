@@ -23,6 +23,42 @@ class _LetterDetailsState extends State<LetterDetails> {
   String? senderID = "";
   String selectedValue = "Pending";
 
+  Future<void> updateStatus() {
+    return db
+        .collection('Letters')
+        .doc(widget.trackingID)
+        .update({'status': selectedValue})
+        .then((value) => print("Status Updated"))
+        .catchError((error) => print("Failed to update status: $error"));
+  }
+
+  showAlertDialog(BuildContext context) {
+    Widget okButton = TextButton(
+      child: const Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    AlertDialog alert = AlertDialog(
+      title: const Text("Status Update"),
+      content: Text(
+        "Status Update Success",
+        textAlign: TextAlign.center,
+      ),
+      actions: [
+        okButton,
+      ],
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   void getData() async {
     final ref = db.collection("Letters").doc(widget.trackingID).withConverter(
           fromFirestore: letterModel.LetterModel.fromFirestore,
@@ -132,7 +168,14 @@ class _LetterDetailsState extends State<LetterDetails> {
                   width: MediaQuery.of(context).size.width * 0.7,
                   height: MediaQuery.of(context).size.height * 0.1,
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      try {
+                        updateStatus();
+                        showAlertDialog(context);
+                      } catch (e) {
+                        print("Failed");
+                      }
+                    },
                     icon: const Icon(Icons.update),
                     label: const Text(
                       "Update record Status",
