@@ -41,7 +41,8 @@ class _SignupPageState extends State<SignupPage> {
         address: _address.text,
         telephoneNo: _telephone.text,
         userId: uid,
-        name: _name.text);
+        name: _name.text,
+        email: _email.text);
 
     final docRef = db
         .collection("Users")
@@ -147,7 +148,7 @@ class _SignupPageState extends State<SignupPage> {
                 )),
             Container(
               alignment: Alignment.center,
-              width: MediaQuery.of(context).size.width * 0.6,
+              width: MediaQuery.of(context).size.width * 0.7,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

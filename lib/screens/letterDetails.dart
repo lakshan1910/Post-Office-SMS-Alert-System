@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp2/screens/models/userModel.dart' as userModel;
 import 'package:myapp2/screens/models/letterModel.dart' as letterModel;
+import 'package:http/http.dart' as http;
 
 class LetterDetails extends StatefulWidget {
   final String trackingID;
@@ -13,15 +17,18 @@ class LetterDetails extends StatefulWidget {
 
 class _LetterDetailsState extends State<LetterDetails> {
   final db = FirebaseFirestore.instance;
-  String? senderName = "";
+  String senderName = "";
   String? senderAddress = "";
   String? senderTelephone = "";
-  String? receiverName = "";
+  String receiverName = "";
   String? receiverAddress = "";
   String? receiverTelephone = "";
   String? status = "";
   String? senderID = "";
   String selectedValue = "Pending";
+  String? receiverEmail = '';
+  String? senderEmail = "";
+  //String status_post = 'Pending';
 
   Future<void> updateStatus() {
     return db
@@ -59,7 +66,10 @@ class _LetterDetailsState extends State<LetterDetails> {
     );
   }
 
+  String myString = '';
   void getData() async {
+    myString = FirebaseAuth.instance.currentUser!.email!;
+
     final ref = db.collection("Letters").doc(widget.trackingID).withConverter(
           fromFirestore: letterModel.LetterModel.fromFirestore,
           toFirestore: (letterModel.LetterModel letter, _) =>
@@ -68,12 +78,13 @@ class _LetterDetailsState extends State<LetterDetails> {
     final docSnap = await ref.get();
     final letterDetailsData = docSnap.data();
     if (letterDetailsData != null) {
-      receiverName = letterDetailsData.receivername;
+      receiverName = letterDetailsData.receivername!;
       receiverAddress = letterDetailsData.receiveraddress;
       receiverTelephone = letterDetailsData.receivertelephoneNo;
       senderID = letterDetailsData.senderuserId;
       status = letterDetailsData.status;
       selectedValue = status!;
+      receiverEmail = letterDetailsData.receiverEmail;
     } else {
       print("No such document.");
     }
@@ -85,9 +96,10 @@ class _LetterDetailsState extends State<LetterDetails> {
     final docSnap2 = await ref2.get();
     final userDetailsData = docSnap2.data();
     if (userDetailsData != null) {
-      senderName = userDetailsData.name;
+      senderName = userDetailsData.name!;
       senderAddress = userDetailsData.address;
       senderTelephone = userDetailsData.telephoneNo;
+      senderEmail = userDetailsData.email;
     } else {
       print("No such document.");
     }
@@ -106,6 +118,47 @@ class _LetterDetailsState extends State<LetterDetails> {
 
   @override
   Widget build(BuildContext context) {
+    Future sendEmail({
+      required String name,
+      required String email,
+      required String subject,
+      required String message,
+    }) async {
+      const serviceId = 'service_7uicxgb';
+      const templateId = 'template_0izzoxq';
+      const userId = 'dzlSXk5kQqYW_OC3Q';
+      final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+
+      // Create a map to represent the template parameters
+      Map<String, String> templateParams = {
+        'to_name': name,
+        'user_email': email,
+        'subject': subject,
+        'message': message,
+      };
+
+      // Convert the map to a JSON string
+      String jsonBody = jsonEncode({
+        'service_id': serviceId,
+        'template_id': templateId,
+        'user_id': userId,
+        'template_params': templateParams,
+      });
+      print(status);
+      // Use the http.post method with proper headers and JSON body
+      final response = await http.post(
+        url,
+        headers: {
+          'origin': 'http://localhost',
+          'Content-Type': 'application/json'
+        },
+        body: jsonBody,
+      );
+
+      // Print the response body for debugging purposes
+      print(response.body);
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.amberAccent,
@@ -168,11 +221,31 @@ class _LetterDetailsState extends State<LetterDetails> {
                   width: MediaQuery.of(context).size.width * 0.7,
                   height: MediaQuery.of(context).size.height * 0.1,
                   child: ElevatedButton.icon(
-                    onPressed: () {
+                    onPressed: () async {
                       try {
                         updateStatus();
                         showAlertDialog(context);
+                        print(senderEmail);
+                        print(receiverEmail);
+                        //sender email
+                        await sendEmail(
+                          email: senderEmail!,
+                          message:
+                              "Your outgoing letter status is $selectedValue",
+                          name: senderName,
+                          subject: "POST OFFICE",
+                        );
+
+                        //reciver email
+                        await sendEmail(
+                          email: receiverEmail!,
+                          message:
+                              "Your incoming letter status is $selectedValue",
+                          name: receiverName,
+                          subject: "POST OFFICE",
+                        );
                       } catch (e) {
+                        print(e.toString());
                         print("Failed");
                       }
                     },

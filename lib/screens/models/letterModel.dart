@@ -7,6 +7,7 @@ class LetterModel {
   final String? receivername;
   final String? status;
   final String? trackingID;
+  final String? receiverEmail;
 
   LetterModel(
       {this.senderuserId,
@@ -14,7 +15,8 @@ class LetterModel {
       this.receivertelephoneNo,
       this.receivername,
       this.status,
-      this.trackingID});
+      this.trackingID,
+      this.receiverEmail});
 
   factory LetterModel.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -27,7 +29,8 @@ class LetterModel {
         receiveraddress: data?['receiveraddress'],
         receivertelephoneNo: data?['receivertelephoneNo'],
         receivername: data?['receivername'],
-        trackingID: data?['trackingID']);
+        trackingID: data?['trackingID'],
+        receiverEmail: data?['receiverEmail']);
   }
 
   Map<String, dynamic> toFirestore() {
@@ -39,6 +42,7 @@ class LetterModel {
         "receivertelephoneNo": receivertelephoneNo,
       if (receivername != null) "receivername": receivername,
       if (trackingID != null) "trackingID": trackingID,
+      if (receiverEmail != null) "receiverEmail": receiverEmail,
     };
   }
 }

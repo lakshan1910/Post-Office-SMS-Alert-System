@@ -14,6 +14,7 @@ class _RegisterLetterState extends State<RegisterLetter> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _address = TextEditingController();
   final TextEditingController _telephone = TextEditingController();
+  final TextEditingController _email = TextEditingController();
   final FirebaseFirestore db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
 
@@ -55,7 +56,8 @@ class _RegisterLetterState extends State<RegisterLetter> {
         receivertelephoneNo: _telephone.text,
         senderuserId: uid,
         receivername: _name.text,
-        status: "Pending");
+        status: "Pending",
+        receiverEmail: _email.text);
 
     final docRef = db
         .collection("Letters")
@@ -68,23 +70,17 @@ class _RegisterLetterState extends State<RegisterLetter> {
 
     await docRef.set(_letter);
 
-    model.LetterModel _letterUpdate =
-        model.LetterModel(trackingID: docRef.id.toString());
-
-    final docRef2 = db
-        .collection("Letters")
-        .withConverter(
-          fromFirestore: model.LetterModel.fromFirestore,
-          toFirestore: (model.LetterModel letter, options) =>
-              letter.toFirestore(),
-        )
-        .doc(docRef.id.toString());
-
-    await docRef2.set(_letterUpdate);
+    db
+        .collection('Letters')
+        .doc(docRef.id.toString())
+        .update({'trackingID': docRef.id.toString()})
+        .then((value) => print(" Updated"))
+        .catchError((error) => print("Failed to update : $error"));
 
     _name.clear();
     _address.clear();
     _telephone.clear();
+    _email.clear();
 
     showAlertDialog(context, docRef.id.toString());
   }
@@ -134,6 +130,17 @@ class _RegisterLetterState extends State<RegisterLetter> {
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Telephone Number',
+                  ),
+                )),
+            Container(
+                alignment: Alignment.topCenter,
+                height: MediaQuery.of(context).size.height * 0.1,
+                padding: const EdgeInsets.all(10),
+                child: TextField(
+                  controller: _email,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Email',
                   ),
                 )),
             SizedBox(

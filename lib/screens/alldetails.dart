@@ -44,7 +44,7 @@ class _AllDetailsState extends State<AllDetails> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.3,
+                          height: MediaQuery.of(context).size.height * 0.2,
                           width: MediaQuery.of(context).size.width * 0.7,
                           child: const Image(
                               image: AssetImage('assets/images/man.png')),
